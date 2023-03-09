@@ -17,7 +17,7 @@ public class UserService {
     UserRepository userRepository;
 
     @Autowired
-    RedisTemplate<String,Object> redisTemplate;
+    RedisTemplate<String,User> redisTemplate;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -29,8 +29,8 @@ public class UserService {
     private final String REDIS_PREFIX_USER = "user::";
 
     //for kafka(create topic)
-    private final String CREATE_WALLET_TOPIC = "create_wallet";
-    public void createUser(UserRequest userRequest) {
+    //private final String CREATE_WALLET_TOPIC = "create_wallet";
+    public String createUser(UserRequest userRequest) {
 
         User user = User.builder()
                 .age(userRequest.getAge())
@@ -50,15 +50,23 @@ public class UserService {
 
         // convert this objet to string to save in kafka template
         String message = jsonObject.toString();
-        kafkaTemplate.send(CREATE_WALLET_TOPIC,message);
+
+        //for single message (attribute) we can send msg like this
+        //send an update to the wallet module/wallet service
+        //create a new wallet for this userName
+        kafkaTemplate.send("create_wallet",message);
+
+        return "user added successfully";
 
     }
 
     //in redis data stored in map format so wee need to convert object to map first
     public void saveInCache(User user){
         Map map = objectMapper.convertValue(user,Map.class);
-        redisTemplate.opsForHash().putAll(REDIS_PREFIX_USER+user.getUserName(),map);
-        redisTemplate.expire(REDIS_PREFIX_USER+user.getUserName(), Duration.ofHours(12));
+        String key = "REDIS_PREFIX_USER"+user.getUserName();
+        System.out.println("User key is"+key);
+        redisTemplate.opsForHash().putAll(key,map);
+        redisTemplate.expire(key, Duration.ofHours(12));
     }
     public User getUserByUserName(String userName) throws Exception{
 

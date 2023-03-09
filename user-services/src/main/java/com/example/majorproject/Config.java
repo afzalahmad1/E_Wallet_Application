@@ -21,60 +21,59 @@ import java.util.Properties;
 public class Config {
 
     @Bean
-    LettuceConnectionFactory getConnection(){
+    LettuceConnectionFactory getConnectionFactory(){
 
         RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration();
+
         LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(redisStandaloneConfiguration);
         return lettuceConnectionFactory;
+
     }
 
+
     @Bean
-    RedisTemplate<String,Object> redisTemplate(){     //key is string and value is User and Object is the parent class
+    RedisTemplate getRedisTemplate(){
 
-        RedisTemplate<String,Object> redisTemplate = new RedisTemplate<>();
+        RedisTemplate<String, User> redisTemplate = new RedisTemplate<>();
 
-        // key
-        RedisSerializer<String> redisSerializer = new StringRedisSerializer();
-        redisTemplate.setKeySerializer(redisSerializer);
+        RedisSerializer<String> stringRedisSerializer = new StringRedisSerializer();
 
-        // value
+        redisTemplate.setKeySerializer(stringRedisSerializer);
+
         JdkSerializationRedisSerializer jdkSerializationRedisSerializer = new JdkSerializationRedisSerializer();
+
         redisTemplate.setValueSerializer(jdkSerializationRedisSerializer);
         redisTemplate.setHashValueSerializer(jdkSerializationRedisSerializer);
 
-        redisTemplate.setConnectionFactory(getConnection());
+        redisTemplate.setConnectionFactory(getConnectionFactory());
 
         return redisTemplate;
     }
 
-    // it is used for converting user(object) to map or map to user(object)
     @Bean
-    ObjectMapper objectMapper(){
+    ObjectMapper getObjectMapper(){
         return new ObjectMapper();
     }
 
-
-
+    //Properties
     @Bean
-    Properties kafkaProperties(){
-        Properties properties = new Properties();
+    Properties kafkaProps(){
 
+        Properties properties = new Properties();
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,StringSerializer.class);
-        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,"localhost:9092");
+        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
 
         return properties;
     }
 
-    ProducerFactory<String,String> getProducerFactory(){
-        return new DefaultKafkaProducerFactory(kafkaProperties());
+    @Bean
+    ProducerFactory<String, String> getProducerFactory(){
+        return new DefaultKafkaProducerFactory(kafkaProps());
     }
 
-    //1st string for message and other one for username
-
-    KafkaTemplate<String,String> getKafkaTemplate(){
-        return new KafkaTemplate<>(getProducerFactory());
+    @Bean
+    KafkaTemplate<String, String> getKafkaTemplate(){
+        return new KafkaTemplate(getProducerFactory());
     }
-
-
 }

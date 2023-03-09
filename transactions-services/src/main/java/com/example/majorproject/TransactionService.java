@@ -28,8 +28,8 @@ public class TransactionService {
     @Autowired
     ObjectMapper objectMapper;
 
-    @Autowired
-    RestTemplate restTemplate;
+//    @Autowired
+//    RestTemplate restTemplate;
 
     public void createTransaction(TransactionRequest transactionRequest){
 
@@ -56,7 +56,7 @@ public class TransactionService {
 
     }
 
-    @KafkaListener(topics={"update_transaction"},groupId="avengers")
+    @KafkaListener(topics={"update_transaction"},groupId="123")
     public void updateTransaction(String message) throws JsonProcessingException {
         JSONObject transactionRequest = objectMapper.readValue(message, JSONObject.class);
 
@@ -66,11 +66,12 @@ public class TransactionService {
         Transaction transaction = transactionRepository.findByTransactionId(transactionid);
 
         if(status=="SUCCESS")
-        transaction.setStatus(TransactionStatus.SUCCESS);
+            transaction.setStatus(TransactionStatus.SUCCESS);
         else transaction.setStatus(TransactionStatus.FAILED);
 
         transactionRepository.save(transaction);
 
-       // callNotificationService(transaction);
+        //callNotificationService(transaction);
     }
+
 }

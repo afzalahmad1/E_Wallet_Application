@@ -20,7 +20,7 @@ public class WalletService {
     @Autowired
     KafkaTemplate kafkaTemplate;
 
-    @KafkaListener(topics = {"create_wallet"},groupId = "avengers")
+    @KafkaListener(topics = {"create_wallet"},groupId = "123")
     public void createWallet(String message) throws JsonProcessingException {
 
         JSONObject jsonObject = objectMapper.readValue(message,JSONObject.class);
@@ -34,7 +34,7 @@ public class WalletService {
         walletRepository.save(wallet);
     }
 
-    @KafkaListener(topics={"create_transaction"},groupId = "avengers")
+    @KafkaListener(topics={"create_transaction"},groupId = "123")
     public void updateWallet(String message) throws JsonProcessingException {
 
         JSONObject jsonObject = objectMapper.readValue(message,JSONObject.class);
